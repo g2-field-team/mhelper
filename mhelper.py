@@ -42,25 +42,26 @@ def init(args):
         expt_name = ''
         
     if len(args) > 2:
-        expt_dir = args[2]
+        expt_dir = os.path.realpath(args[2])
 
     else:
         expt_dir = ''
 
     if len(args) > 3:
-        datadir = args[3]
+        datadir = os.path.realpath(args[3])
 
     else:
         datadir = ''
 
     # Set the experiment name.
-    while expt_name == '':
+    while (expt_name == '') or (expt_name in exptlist.expt_names):
 
         expt_name = raw_input('Enter a valid name for the experiment: ')
 
         if expt_name in exptlist.expt_names:
             print '%s is already an existing experiment.' % expt_name
-            expt_name = ''
+
+    print 'Experiment name set to %s.' % expt_name
     
     # Set the experiment base directory.
     while expt_dir == '':
@@ -84,6 +85,8 @@ def init(args):
         elif expt_dir == '/':
             print 'Cannot set experiment to root directory.'
             expt_dir = ''
+
+    print 'Experiment directory set to %s.' % expt_dir
 
     # Get the user name.
     user = getpass.getuser()
@@ -142,20 +145,20 @@ def init(args):
         datadir = ''
 
     elif not os.path.isdir(datadir):
-        s = raw_input('Path does not exist, but parent does. Create path?')
+        s = raw_input('Path does not exist, but parent does. Create? ')
         
         if distutils.util.strtobool(s):
             print 'Creating data directory.'
             os.mkdir(datadir)
 
-            print 'Linking data directory [%s] to resources/data'
+            print 'Linking data directory [%s] to resources/data' % datadir
             os.symlink(datadir, expt_dir + '/resources/data')
 
         else:
             datadir = ''
 
     else:
-        print 'Linking data directory [%s] to resources/data'
+        print 'Linking data directory [%s] to resources/data' % datadir
         os.symlink(datadir, expt_dir + '/resources/data')
 
     tmp = expt_dir + '/resources/data'
