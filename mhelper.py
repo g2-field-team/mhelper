@@ -1,34 +1,35 @@
-# A simple python wrapper around odb calls to make initialization easier
+# A python utility that interfaces with some MIDAS programs
 
+import argparse
 import os
-from subprocess import call
+import sys
 
-class ODB:
-    def __init__(self, expname):
-        self.expname = expname
-        with open(os.environ['MIDAS_EXPTAB']) as f:
-            exptab = f.read().split('\n')
-            for line in exptab:
-                if line.find(expname) != -1:
-                    midasdir = line.split(' ')[1]
-                    self.expdir = midasdir.replace('/resources', '')
+def main():
 
-    def mkdir(self, dirname):
-        cmd = ['odbedit', '-e', self.expname, '-c']
-        cmd.append('mkdir "' + dirname + '"')
-        return call(cmd)
+    # Initialize the argument parser.
+    parser = argparse.ArgumentParser()
+    
+    # Configure the argument parser.
+    parser.add_argument('cmd', help='the primary mhelper command')
+    parser.add_argument('-e' ,'--expt', help='experiment name')
 
-    def create_key(self, path, typestring, key):
-        cmd = ['odbedit', '-e', self.expname, '-c']
-        cmd.append('create ' + typestring + ' "' + path + '/' + str(key) + '"')
-        return call(cmd)
+    # Parse the command line arguments.
+    args = parser.parse_args()
 
-    def set_value(self, key, val):
-        cmd = ['odbedit', '-e', self.expname, '-c']
-        cmd.append('set "' + key + '" "' + str(val) + '"')
-        return call(cmd)
+    if args.cmd == 'init':
+        init()
 
-    def call_cmd(self, cmdstring):
-        cmd = ['odbedit', '-e', self.expname, '-c']
-        cmd.append(cmdstring)
-        return call(cmd)
+    return 0
+
+def init():
+
+    print 'Creating a new MIDAS experiment'
+    print 'Press enter to select the default option in brackets.'
+    wd = raw_input('Enter base directory [%s]' % os.path.getpwd())
+    print wd
+    
+    return 0
+
+
+if __name__ == '__main__':
+    main()
