@@ -48,3 +48,29 @@ class ExptList:
                 self.expt_names.append(line.split(' ')[0])
                 self.expt_dirs.append(line.split(' ')[1])
 
+
+    # A function that determines the experiment currently being worked on.
+    def current_expt(self):
+
+        cwd = os.getcwd()
+        expt_list_string = 'Choose the current experiment:\n'
+
+        for i in range(expt_dirs):
+            
+            expt_list_string += '    %s [%i]\n' % (expt_names[i], i)
+            if cwd.startswith(expt_dirs[i]):
+                return expt_names[i]
+
+        # If we made it here we don't know.
+    
+        while True:
+            expt_num = raw_input(expt_list_string + 'current experiment: ')
+
+            try:
+                expname = expt_names[expt_num]
+                break
+
+            except:
+                print 'Not a valid experiment number.'
+
+        return expname
