@@ -105,18 +105,18 @@ class Exptab:
 
 def launch_frontend(fe_path):
     
-    expt = Exptab.current_expt()
+    expt = Exptab().current_expt()
 
-    fename = os.path.split(fe_path)[1].replace('_', '-')
-    scname = '%s.%s' % (expt, fename)
+    fe_name = os.path.split(fe_path)[1].replace('_', '-')
+    sc_name = '%s.%s' % (expt, fe_name)
 
     # Create the screen first.
-    cmd = ['screen', '-dmS', scname]
+    cmd = ['screen', '-dmS', sc_name]
     call(cmd)
 
     # Now send the command to run the frontend.
-    cmd = ['screen', '-S', scname, '-p', '0', '-rX', 'stuff']
-    cmd.append('"%s -e %s$(printf \\r)"' % (fename, expt))
-    call(cmd)
+    cmd = ['screen', '-S', sc_name, '-p', '0', '-rX', 'stuff']
+    cmd.append('"%s -e %s$(printf \\\\r)"' % (fe_path, expt))
+    call(' '.join(cmd), shell=True)
     
     
