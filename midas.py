@@ -102,3 +102,21 @@ class Exptab:
 
         print 'Could not find experiment.'
         return None
+
+def launch_frontend(fe_path):
+    
+    expt = Exptab.current_expt()
+
+    fename = os.path.split(fe_path)[1].replace('_', '-')
+    scname = '%s.%s' % (expt, fename)
+
+    # Create the screen first.
+    cmd = ['screen', '-dmS', scname]
+    call(cmd)
+
+    # Now send the command to run the frontend.
+    cmd = ['screen', '-S', scname, '-p', '0', '-rX', 'stuff']
+    cmd.append('"%s -e %s$(printf \\r)"' % (fename, expt))
+    call(cmd)
+    
+    
