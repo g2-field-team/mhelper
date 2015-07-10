@@ -13,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser()
     
     # Configure the argument parser.
-    parser.add_argument('cmd', nargs='+', help='the primary mhelper command')
+    parser.add_argument('cmd', nargs='+', help='init, link, expt, resource')
 
     # Parse the command line arguments.
     args = parser.parse_args()
@@ -21,11 +21,18 @@ def main():
     if args.cmd[0] == 'init':
         init(args.cmd)
 
-    if args.cmd[0] == 'link':
+    elif args.cmd[0] == 'link':
         link(args.cmd)
 
-    if args.cmd[0] == 'expt':
+    elif args.cmd[0] == 'expt':
         print midas.Exptab().current_expt()
+
+    elif args.cmd[0] == 'resource':
+        resource(args.cmd)
+
+    else:
+        print parser.print_help()
+        
 
     return 0
 
@@ -232,6 +239,45 @@ def link(args):
     else:
         print 'Target directory was not found in experiment resources.'
         return -1
+
+
+# Create a new resource directory for the experiment
+def resource(args):
+
+    # Get the directory for the current experiment
+    expt_dir = midas.Exptab().current_expt_dir()
+    
+    if len(args) < 2:
+        print 'usage: mhelper resource resource-name'
+        print 'No resource-name specified.'
+
+    else:
+        resource_dir = expt_dir + '/resources/' + args[1]
+
+    if len(args) > 2:
+        link_dir = os.path.realpath(args[2])
+
+    else:
+        link_dir = ''
+
+    if os.path.isfile(resource_dir):
+        print 'A file already exists with the specfied name!'
+        return -1
+
+    if os.path.isdir(resource_dir):
+        print 'A directory already exists with the specfied name!'
+        return -1
+
+    if not os.path.isdir(link_dir):
+        print 'Link path is not a directory. Cannot create resource.'
+        return -1
+
+    if link_dir == '':
+        os.mkdir(resource_dir)
+        return 0
+
+    else:
+        os.symlink(link_dir, resource_dir)
 
 
 if __name__ == '__main__':
