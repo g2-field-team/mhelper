@@ -4,8 +4,10 @@ import os
 import sys
 import argparse
 import getpass
-import midas
 import distutils
+import git
+
+import midas
 
 def main():
 
@@ -209,6 +211,23 @@ def init(args):
         else:
             print 'Linking data directory [%s] to resources/data' % datadir
             os.symlink(datadir, expt_dir + '/resources/data')
+
+    print 'Initializing git version control.'
+    g = git.cmd.Git(expt_dir)
+    g.init()
+    
+    print 'Setting up .gitignore defaults.'
+    with open(expt_dir + '/.gitignore', 'a+') as f:
+        f.write('*.o\n')
+        f.write('*~\n')
+        f.write('*#*\n')
+        f.write('*.so\n')
+        f.write('*.c*.d\n')
+        f.write('\n')
+        f.write('resources')
+
+    print 'Adding items for initial commit. It\'s all yours now.'
+    g.add('.')
 
     return 0
 
