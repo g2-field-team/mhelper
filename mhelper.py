@@ -21,6 +21,12 @@ def main():
     if args.cmd[0] == 'init':
         init(args.cmd)
 
+    if args.cmd[0] == 'link':
+        link(args.cmd)
+
+    if args.cmd[0] == 'expt':
+        print midas.ExptList().current_expt()
+
     return 0
 
 def init(args):
@@ -93,11 +99,11 @@ def init(args):
         
     print 'Adding experiment to the MIDAS exptab.'
     try:
-        with open('exptab', 'a+') as f:
-            f.write('%s %s %s\n' % (expt_name, expt_dir, user))
+        with open('/etc/exptab', 'a+') as f:
+            f.write('%s %s/resources %s\n' % (expt_name, expt_dir, user))
 
     except:
-        print 'Couldn\'t append to /etc/exptab.  You may need to run as sudo.'
+        print 'Couldn\'t append to /etc/exptab.  Check the permissions.'
         sys.exit(1)
         
     # Check the first one to make sure we have write permissions.
@@ -107,7 +113,7 @@ def init(args):
         base = expt_dir + '/online/'
     
     except:
-        print 'Could not create online directory.  May need to run as sudo'
+        print 'Could not create online directory.  Check your permissions.'
         sys.exit(1)
 
     print 'Creating subdirectories: bin, www, frontends'
@@ -165,14 +171,15 @@ def init(args):
     while datadir == '':
 
         datadir = raw_input('Enter a valid data directory [%s]: ' % tmp)
+
+        if datadir == '':
+            datadir = tmp
+
         try:
             datadir = os.path.realpath(datadir)
 
         except:
             datadir = os.getcwd() + datadir
-
-        if datadir == '':
-            datadir = tmp
     
         if datadir == tmp:
             print 'Creating data directory as resources/data'
@@ -197,6 +204,34 @@ def init(args):
             os.symlink(datadir, expt_dir + '/resources/data')
 
     return 0
+
+# Link something from the resources directory to the current one.
+def link(args):
+
+    if len(args) < 2:
+        print 'usage: mhelper link <target-dir> [link-dir]'
+        return -1
+
+    target_dir = args[1]
+
+    if len(args) > 2:
+        link_dir = args[2]
+
+    else:
+        link_dir = os.path.split(target_dir)[1]
+
+    # Get the directory for the current experiment
+    expt_dir = midas.ExptList().current_expt_dir()
+
+    if target_dir in os.listdir(expt_dir + '/resources'):
+        
+        path = os.path.realpath(expt_dir + '/resources/' + target_dir)
+        os.symlink(path, link_dir)
+        return 0
+        
+    else:
+        print 'Target directory was not found in experiment resources.'
+        return -1
 
 
 if __name__ == '__main__':

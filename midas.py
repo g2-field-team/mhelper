@@ -45,32 +45,60 @@ class ExptList:
             lines = lines.split('\n')
             
             for line in lines:
+
+                if line == '':
+                    continue
+
                 self.expt_names.append(line.split(' ')[0])
-                self.expt_dirs.append(line.split(' ')[1])
+                self.expt_dirs.append(os.path.split(line.split(' ')[1])[0])
 
 
     # A function that determines the experiment currently being worked on.
     def current_expt(self):
 
-        cwd = os.getcwd()
-        expt_list_string = 'Choose the current experiment:\n'
+        # getcwd routes symlinks to their absolute path, and that's not
+        # what we want. PWD isn't portable however.
+        try:
+            cwd = os.environ['PWD']
 
-        for i in range(expt_dirs):
+        except:
+            cwd = os.getcwd()
             
-            expt_list_string += '    %s [%i]\n' % (expt_names[i], i)
-            if cwd.startswith(expt_dirs[i]):
-                return expt_names[i]
+        expt_list_string = 'Current experiments:\n'
+
+        # Match against experiment base directories.
+        for i in range(len(self.expt_dirs)):
+            
+            expt_list_string += '    %s [%i]\n' % (self.expt_names[i], i)
+            if cwd.startswith(self.expt_dirs[i]):
+                return self.expt_names[i]
 
         # If we made it here we don't know.
     
         while True:
-            expt_num = raw_input(expt_list_string + 'current experiment: ')
+            expt_num = raw_input(expt_list_string + 'Choose experiment: ')
 
             try:
-                expname = expt_names[expt_num]
+                expname = self.expt_names[int(expt_num)]
                 break
 
             except:
                 print 'Not a valid experiment number.'
 
         return expname
+
+    def current_expt_dir(self):
+        
+        expt_name = self.current_expt()
+        return self.get_expt_dir(expt_name)
+
+
+    def get_expt_dir(self, expt_name):
+        
+        for i in range(len(self.expt_names)):
+
+            if expt_name == self.expt_names[i]:
+                return self.expt_dirs[i]
+
+        print 'Could not find experiment.'
+        return None
