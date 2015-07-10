@@ -33,7 +33,7 @@ class ODB:
         cmd.append(cmdstring)
         return call(cmd)
 
-class ExptList:
+class Exptab:
     def __init__(self, exptab='/etc/exptab'):
         self.exptab = exptab
         self.expt_names = []

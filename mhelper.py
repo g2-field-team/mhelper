@@ -25,7 +25,7 @@ def main():
         link(args.cmd)
 
     if args.cmd[0] == 'expt':
-        print midas.ExptList().current_expt()
+        print midas.Exptab().current_expt()
 
     return 0
 
@@ -38,7 +38,7 @@ def init(args):
     print 'Initializing a new MIDAS experiment.'
     print 'Press enter to select default options in brackets.'
 
-    exptlist = midas.ExptList()
+    exptlist = midas.Exptab()
 
     # Deal with optional arguments
     if len(args) > 1:
@@ -221,7 +221,7 @@ def link(args):
         link_dir = os.path.split(target_dir)[1]
 
     # Get the directory for the current experiment
-    expt_dir = midas.ExptList().current_expt_dir()
+    expt_dir = midas.Exptab().current_expt_dir()
 
     if target_dir in os.listdir(expt_dir + '/resources'):
         
