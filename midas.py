@@ -39,7 +39,7 @@ class ODB:
         entry_data = entry[entry_path]['value']
 
         if entry_type == "path":
-            entry_path = self.expdir + entry_path
+            entry_data = self.expdir + entry_data
             self.call_cmd('create string "%s[1][256]"' % entry_path)
             self.call_cmd('set "%s" "%s"' % (entry_path, entry_data))
 
