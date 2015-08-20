@@ -31,6 +31,9 @@ def main():
     elif args.cmd[0] == 'expt':
         print midas.Exptab().current_expt()
 
+    elif args.cmd[0] == 'daq':
+        daq_control(args.cmd)
+
     elif args.cmd[0] == 'resource':
         resource(args.cmd)
 
@@ -321,6 +324,36 @@ def add_to_odb(args):
     
     for key in odb_entries.keys():
         odb.add_entry({key: odb_entries[key]})
+
+def daq_control(args):
+
+    if args[1] == 'start':
+
+        if len(args) > 2:
+            midas.Expt().start(args[1:])
+
+        else:
+            midas.Expt().start()
+    
+    elif args[1] == 'stop':
+        
+        if len(args) > 2:
+            midas.Expt().stop(args[1:])
+
+        else:
+            midas.Expt().stop()
+
+    elif args[1] == 'restart':
+        
+        if len(args) > 2:
+            midas.Expt().restart(args[1:])
+
+        else:
+            midas.Expt().restart()
+
+    else:
+        print "Not a recognized option for run control [start, stop, restart]."
+
 
 
 if __name__ == '__main__':

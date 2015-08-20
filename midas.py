@@ -3,13 +3,84 @@
 import os
 from subprocess import call
 
+class Expt:
+    def __init__(self, expname=None):
+
+        if expname is None:
+            self.expname = Exptab().current_expt()
+        else:
+            self.expname = expname
+
+        with open(os.environ['MIDAS_EXPTAB']) as f:
+            exptab = f.read().split('\n')
+            for line in exptab:
+                if line.find(self.expname) != -1:
+                    midasdir = line.split(' ')[1]
+                    self.expdir = midasdir.replace('/resources', '')
+
+    def start(self, modules=None):
+        
+        if modules is None:
+            script = '%s/online/bin/start_daq.sh' % self.expdir
+            print script
+            call(script)
+
+        else:
+            for m in modules:
+
+                if m == 'frontends':
+                    script = '%s/online/bin/start_frontends.sh' % self.expdir
+                    call(script)
+        
+                elif m == 'analyzers':
+                    script = '%s/online/bin/start_analyzers.sh' % self.expdir
+                    call(script)
+
+                elif m == 'midas':
+                    script = '%s/online/bin/start_midas.sh' % self.expdir
+                    call(script)
+                
+                else:
+                    print "Not a valid set of modules."
+
+
+    def kill(self, modules=None):
+        
+        if modules is None:
+            script = '%s/online/bin/kill_daq.sh' % self.expdir
+            call(script)
+
+        else:
+            for m in modules:
+
+                if m == 'frontends':
+                    script = '%s/online/bin/kill_frontends.sh' % self.expdir
+                    call(script)
+        
+                elif m == 'analyzers':
+                    script = '%s/online/bin/kill_analyzers.sh' % self.expdir
+                    call(script)
+
+                elif m == 'midas':
+                    script = '%s/online/bin/kill_midas.sh' % self.expdir
+                    call(script)
+                
+                else:
+                    print "Not a valid set of modules."
+
+    def restart(self, modules=None):
+
+        self.kill(modules)
+        self.start(modules)
+
+
 class ODB:
     def __init__(self, expname=None):
         self.expname = expname
         with open(os.environ['MIDAS_EXPTAB']) as f:
             exptab = f.read().split('\n')
             for line in exptab:
-                if line.find(expname) != -1:
+                if line.find(self.expname) != -1:
                     midasdir = line.split(' ')[1]
                     self.expdir = midasdir.replace('/resources', '')
 
@@ -39,7 +110,11 @@ class ODB:
         entry_data = entry[entry_path]['value']
 
         if entry_type == "path":
-            entry_data = self.expdir + entry_data
+            if self.expdir[-1] == '/':
+                entry_data = self.expdir + entry_data
+            else:
+                entry_data = self.expdir + '/' + entry_data
+                
             self.call_cmd('create string "%s[1][256]"' % entry_path)
             self.call_cmd('set "%s" "%s"' % (entry_path, entry_data))
 
