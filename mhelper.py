@@ -6,6 +6,7 @@ import argparse
 import getpass
 import distutils
 import git
+import simplejson
 
 import midas
 
@@ -15,7 +16,8 @@ def main():
     parser = argparse.ArgumentParser()
     
     # Configure the argument parser.
-    parser.add_argument('cmd', nargs='+', help='init, link, expt, resource')
+    parser.add_argument('cmd', nargs='+', 
+                        help='init, link, expt, resource, add-to-odb')
 
     # Parse the command line arguments.
     args = parser.parse_args()
@@ -32,11 +34,14 @@ def main():
     elif args.cmd[0] == 'resource':
         resource(args.cmd)
 
+    elif args.cmd[0] == 'add-to-odb':
+        add_to_odb(args.cmd)
+
     else:
         print parser.print_help()
-        
 
     return 0
+
 
 def init(args):
 
@@ -297,6 +302,25 @@ def resource(args):
 
     else:
         os.symlink(link_dir, resource_dir)
+
+
+def add_to_odb(args):
+    """Add a set of entries from json or a single entry from the command
+    line to the odb"""
+
+    if len(args) < 3:
+        
+        odb_entries = simplejson.loads(open(args[1]).read())
+
+    else:
+
+        odb_entries = [{args[1]: {"type": args[2], "value": args[3]}}]
+
+    # Get the ODB object.
+    odb = midas.ODB(midas.Exptab().current_expt())
+    
+    for key in odb_entries.keys():
+        odb.add_entry({key: odb_entries[key]})
 
 
 if __name__ == '__main__':

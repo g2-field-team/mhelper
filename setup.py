@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='mhelper',
-      version='0.1',
+      version='0.2.0',
       description='MIDAS Helper Utilities',
       author='Matthias W. Smith',
       author_email='mwsmith2@uw.edu',

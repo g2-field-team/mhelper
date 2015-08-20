@@ -4,7 +4,7 @@ import os
 from subprocess import call
 
 class ODB:
-    def __init__(self, expname):
+    def __init__(self, expname=None):
         self.expname = expname
         with open(os.environ['MIDAS_EXPTAB']) as f:
             exptab = f.read().split('\n')
@@ -32,6 +32,21 @@ class ODB:
         cmd = ['odbedit', '-e', self.expname, '-c']
         cmd.append(cmdstring)
         return call(cmd)
+
+    def add_entry(self, entry):
+        entry_path = entry.keys()[0]
+        entry_type = entry[entry_path]['type'].lower()
+        entry_data = entry[entry_path]['value']
+
+        if entry_type == "path":
+            entry_path = self.expdir + entry_path
+            self.call_cmd('create string "%s[1][256]"' % entry_path)
+            self.call_cmd('set "%s" "%s"' % (entry_path, entry_data))
+
+        else:
+            self.call_cmd('create "%s" "%s"' % (entry_type, entry_path))
+            self.call_cmd('set "%s" "%s"' % (entry_path, entry_data))
+
 
 class Exptab:
     def __init__(self, exptab='/etc/exptab'):
