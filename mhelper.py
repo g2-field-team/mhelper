@@ -7,6 +7,8 @@ import getpass
 import distutils
 import git
 import simplejson
+from difflib import SequenceMatcher
+import operator
 
 import midas
 
@@ -39,6 +41,9 @@ def main():
 
     elif args.cmd[0] == 'add-to-odb':
         add_to_odb(args.cmd)
+
+    elif args.cmd[0] == 'search-runlog':
+        search_runlog(args.cmd)
 
     else:
         print parser.print_help()
@@ -317,7 +322,7 @@ def add_to_odb(args):
 
     else:
 
-        odb_entries = [{args[1]: {"type": args[2], "value": args[3]}}]
+        odb_entries = {args[1]: {"type": args[2], "value": args[3]}}
 
     # Get the ODB object.
     odb = midas.ODB(midas.Exptab().current_expt())
@@ -335,13 +340,13 @@ def daq_control(args):
         else:
             midas.Expt().start()
     
-    elif args[1] == 'stop':
+    elif args[1] == 'kill':
         
         if len(args) > 2:
-            midas.Expt().stop(args[1:])
+            midas.Expt().kill(args[1:])
 
         else:
-            midas.Expt().stop()
+            midas.Expt().kill()
 
     elif args[1] == 'restart':
         
@@ -355,6 +360,41 @@ def daq_control(args):
         print "Not a recognized option for run control [start, stop, restart]."
 
 
+def search_runlog(args):
+    """The function searches the runlog for the best match."""
+ 
+    # Get the runlog as json."
+    runlog_file = midas.Exptab().current_expt_dir()
+    runlog_file += '/resources/log/runlog.json'
+    runlog = simplejson.loads(open(runlog_file).read())
+
+    query = args[1]
+
+    results = {}
+
+    for run in runlog.keys():
+        
+        comment = runlog[run]['comment']
+        ntags = len(runlog[run]['tags']) * 1.0
+
+        results[run] = SequenceMatcher(None, query, comment).ratio()
+
+        for tag in runlog[run]['tags']:
+            results[run] += SequenceMatcher(None, query, tag).ratio() / ntags
+
+    sorted_runlog = sorted(results.items(), 
+                           key=operator.itemgetter(1), 
+                           reverse=True)
+
+    print "Search results on runlog.json"
+    for idx, run in enumerate(sorted_runlog):
+
+        text = [runlog[run[0]]['comment']]
+        for tag in runlog[run[0]]['tags']:
+            text.append(tag)
+
+        print "%i\t%s - (%s)" % (idx + 1, run[0], ', '.join(text))
+        
 
 if __name__ == '__main__':
 
