@@ -19,7 +19,7 @@ def main():
     
     # Configure the argument parser.
     parser.add_argument('cmd', nargs='+', 
-                        help='init, link, expt, resource, add-to-odb')
+        help='init, link, expt, resource, add-to-odb, search-runlog')
 
     # Parse the command line arguments.
     args = parser.parse_args()
