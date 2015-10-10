@@ -4,12 +4,14 @@ import os
 import sys
 import time
 import argparse
+import glob
 import getpass
 import distutils
 import git
 import simplejson
 from difflib import SequenceMatcher
 import operator
+from subprocess import call
 
 import midas
 
@@ -325,6 +327,9 @@ def parse_odb(args):
     elif args[1] == 'backup':
         odb_backup(args)
 
+    elif args[1] == 'restore':
+        odb_restore(args)
+
 
 def add_to_odb(args):
     """Add a set of entries from json or a single entry from the command
@@ -349,17 +354,50 @@ def odb_backup(args):
     """Dump a quick odb backup"""
 
     if len(args) > 3:
-        backup_name = args[2]
+        backup = args[2]
 
     else:
-        backup_name = time.strftime('%y%m%d_%H%M%S.odb', time.localtime())
+        backup = time.strftime('%y%m%d_%H%M%S.odb', time.localtime())
 
     # Compose odb command
-    cmd = 'save %s/resources/' % midas.Exptab().current_expt_dir()
-    cmd += backup_name
+    expt = midas.Expt()
+
+    odb_dir= '%s/resources/' % expt.expdir
+    cmd = 'save %s/%s' % (odb_dir, backup)
 
     # Get the ODB object.
-    odb = midas.ODB(midas.Exptab().current_expt())
+    odb = midas.ODB(expt.expname)
+    odb.call_cmd(cmd)
+
+
+def odb_restore(args):
+    """Load the most recent odb backup"""
+
+    expt = midas.Expt()
+    odb_dir= '%s/resources/' % expt.expdir
+
+    # Load a specified odb
+    if len(args) > 3:
+        backup = args[2]
+
+    # Load the most recent timestamped backup
+    else:
+        tmp = glob.glob(odb_dir + '[0-9]' * 6 + '_' + '[0-9]' * 6 + '.odb')
+        tmp.sort()
+        backup = tmp[-1]
+
+    # Get the size of the old odb
+    size = os.stat(odb_dir + '.ODB.SHM').st_size
+    
+    # Remove the old odb
+    os.remove(odb_dir + '.ODB.SHM')
+    call(['odbedit', '-e', expt.expname, '-s', str(size), '-c', 'clean'])
+
+    # Compose odb command
+    cmd = 'load %s' % backup
+
+    # Get the ODB object.
+    odb = midas.ODB(expt.expname)
     odb.call_cmd(cmd)
 
 
