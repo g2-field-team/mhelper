@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 import argparse
 import getpass
 import distutils
@@ -19,7 +20,7 @@ def main():
     
     # Configure the argument parser.
     parser.add_argument('cmd', nargs='+', 
-        help='init, link, expt, resource, add-to-odb, search-runlog')
+        help='init, link, expt, resource, add-to-odb, search-runlog, odb')
 
     # Parse the command line arguments.
     args = parser.parse_args()
@@ -44,6 +45,9 @@ def main():
 
     elif args.cmd[0] == 'search-runlog':
         search_runlog(args.cmd)
+
+    elif args.cmd[0] == 'odb':
+        parse_odb(args.cmd)
 
     else:
         print parser.print_help()
@@ -312,6 +316,16 @@ def resource(args):
         os.symlink(link_dir, resource_dir)
 
 
+def parse_odb(args):
+    """Select a function that has to do with the odb"""
+
+    if args[1] == 'add':
+        add_to_odb(args)
+    
+    elif args[1] == 'backup':
+        odb_backup(args)
+
+
 def add_to_odb(args):
     """Add a set of entries from json or a single entry from the command
     line to the odb"""
@@ -329,6 +343,25 @@ def add_to_odb(args):
     
     for key in odb_entries.keys():
         odb.add_entry({key: odb_entries[key]})
+
+
+def odb_backup(args):
+    """Dump a quick odb backup"""
+
+    if len(args) > 3:
+        backup_name = args[2]
+
+    else:
+        backup_name = time.strftime('%y%m%d_%H%M%S.odb', time.localtime())
+
+    # Compose odb command
+    cmd = 'save %s/resources/' % midas.Exptab().current_expt_dir()
+    cmd += backup_name
+
+    # Get the ODB object.
+    odb = midas.ODB(midas.Exptab().current_expt())
+    odb.call_cmd(cmd)
+
 
 def daq_control(args):
 
