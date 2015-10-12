@@ -14,7 +14,7 @@ class Expt:
         with open(os.environ['MIDAS_EXPTAB']) as f:
             exptab = f.read().split('\n')
             for line in exptab:
-                if line.find(self.expname) != -1:
+                if line.split(' ')[0] == self.expname:
                     midasdir = line.split(' ')[1]
                     self.expdir = midasdir.replace('/resources', '')
 
