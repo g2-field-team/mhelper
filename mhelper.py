@@ -446,10 +446,14 @@ def search_runlog(args):
     for run in runlog.keys():
         
         comment = runlog[run]['comment']
-        ntags = len(runlog[run]['tags']) * 1.0
+        try:
+            ntags = len(runlog[run]['tags']) * 1.0
+        except:
+            runlog[run]['tags'] = []
+            ntags = 0.0
 
         results[run] = SequenceMatcher(None, query, comment).ratio()
-
+        
         for tag in runlog[run]['tags']:
             results[run] += SequenceMatcher(None, query, tag).ratio() / ntags
 
@@ -465,6 +469,9 @@ def search_runlog(args):
             text.append(tag)
 
         print "%i\t%s - (%s)" % (idx + 1, run[0], ', '.join(text))
+
+        if idx > 20:
+            break
         
 
 if __name__ == '__main__':
