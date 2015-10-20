@@ -12,6 +12,7 @@ import simplejson
 from difflib import SequenceMatcher
 import operator
 from subprocess import call
+import readline
 
 import midas
 
@@ -55,6 +56,14 @@ def main():
         print parser.print_help()
 
     return 0
+
+
+def edit_line(prompt, prefill=''):
+   readline.set_startup_hook(lambda: readline.insert_text(prefill))
+   try:
+      return raw_input(prompt)
+   finally:
+      readline.set_startup_hook()
 
 
 def init(args):
@@ -439,6 +448,9 @@ def runlog_parse(args):
     elif args[1] == 'flag':
         runlog_flag(args)
     
+    elif args[1] == 'edit':
+        runlog_edit(args)
+
     else:
         print "Option not recognized."
 
@@ -504,6 +516,41 @@ def runlog_flag(args):
         run = keys[-1]
         runlog[run]['quality'] = args[2]
 
+    with open(runlog_file, 'w') as f:
+        f.write(json.dumps(runlog))
+
+def runlog_edit(args):
+    """Edit an entry in the runlog."""
+
+    # Get the runlog as json."
+    runlog_file = midas.Exptab().current_expt_dir()
+    runlog_file += '/resources/log/runlog.json'
+    runlog = simplejson.loads(open(runlog_file).read())
+    
+    keys = runlog.keys()
+    keys.sort()
+
+    try:
+        run = 'run_%05i' % int(args[2])
+
+    except:
+        run = keys[-1]
+
+    for key in runlog[run].keys():
+
+        if key == 'tags':
+            line = edit_line(key + ': ', ', '.join(runlog[run][key]))
+
+            runlog[run][key] = []
+
+            for tag in line.split(','):
+                runlog[run][key].append(tag.strip())
+            
+        else:
+            line = edit_line(key + ': ', runlog[run][key])
+            runlog[run][key] = line.strip()
+
+    print "Saving changes."
     with open(runlog_file, 'w') as f:
         f.write(json.dumps(runlog))
 
