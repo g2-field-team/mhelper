@@ -451,6 +451,9 @@ def runlog_parse(args):
     elif args[1] == 'edit':
         runlog_edit(args)
 
+    elif args[1] == 'dump':
+        runlog_dump(args)
+
     else:
         print "Option not recognized."
 
@@ -553,6 +556,38 @@ def runlog_edit(args):
     print "Saving changes."
     with open(runlog_file, 'w') as f:
         f.write(json.dumps(runlog))
+
+def runlog_dump(args):
+    """Print the all entries after the given run."""
+
+    # Get the runlog as json."
+    runlog_file = midas.Exptab().current_expt_dir()
+    runlog_file += '/resources/log/runlog.json'
+    runlog = simplejson.loads(open(runlog_file).read())
+    
+    keys = runlog.keys()
+    keys.sort()
+
+    try:
+        run = 'run_%05i' % int(args[2])
+
+    except:
+        print "Could not find run %s." % args[2]
+        return
+    
+    start_dumping = False
+    for key in keys:
+
+        if (key == run):
+            start_dumping = True
+            
+        if start_dumping:
+
+            print '\n%s\n' % key
+            print '    %s: %s' % ('comment', runlog[key]['comment'])
+            print '    %s: %s' % ('quality', runlog[key]['quality'])
+            print '    %s: %s' % ('tags', ', '.join(runlog[key]['tags']))
+    
 
 if __name__ == '__main__':
 
