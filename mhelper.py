@@ -22,7 +22,7 @@ def main():
     
     # Configure the argument parser.
     parser.add_argument('cmd', nargs='+', 
-        help='init, link, expt, resource, add-to-odb, search-runlog, odb')
+        help='init, link, expt, resource, add-to-odb, runlog, odb')
 
     # Parse the command line arguments.
     args = parser.parse_args()
@@ -45,8 +45,8 @@ def main():
     elif args.cmd[0] == 'add-to-odb':
         add_to_odb(args.cmd)
 
-    elif args.cmd[0] == 'search-runlog':
-        search_runlog(args.cmd)
+    elif args.cmd[0] == 'runlog':
+        runlog_parse(args.cmd)
 
     elif args.cmd[0] == 'odb':
         parse_odb(args.cmd)
@@ -431,7 +431,19 @@ def daq_control(args):
         print "Not a recognized option for run control [start, stop, restart]."
 
 
-def search_runlog(args):
+def runlog_parse(args):
+    
+    if args[1] == 'search':
+        runlog_search(args)
+
+    elif args[1] == 'flag':
+        runlog_flag(args)
+    
+    else:
+        print "Option not recognized."
+
+
+def runlog_search(args):
     """The function searches the runlog for the best match."""
  
     # Get the runlog as json."
@@ -472,7 +484,28 @@ def search_runlog(args):
 
         if idx > 20:
             break
-        
+
+def runlog_flag(args):
+    """Flag the most recent run as bad (or good!)."""
+
+    # Get the runlog as json."
+    runlog_file = midas.Exptab().current_expt_dir()
+    runlog_file += '/resources/log/runlog.json'
+    runlog = simplejson.loads(open(runlog_file).read())
+    
+    keys = runlog.keys()
+    keys.sort()
+
+    try:
+        run = 'run_%05i' % int(args[2])
+        runlog[run]['quality'] = args[3]
+
+    except:
+        run = keys[-1]
+        runlog[run]['quality'] = args[2]
+
+    with open(runlog_file, 'w') as f:
+        f.write(json.dumps(runlog))
 
 if __name__ == '__main__':
 
