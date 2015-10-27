@@ -1,7 +1,7 @@
 # A simple python wrapper around odb calls to make initialization easier
 
 import os
-from subprocess import call
+from subprocess import call, Popen, PIPE
 
 class Expt:
     def __init__(self, expname=None):
@@ -93,6 +93,13 @@ class ODB:
         cmd = ['odbedit', '-e', self.expname, '-c']
         cmd.append('create ' + typestring + ' "' + path + '/' + str(key) + '"')
         return call(cmd)
+
+    def get_value(self, key):
+        cmd = ['odbedit', '-e', self.expname, '-c']
+        cmd.append('ls -v "' + key + '"')
+        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        output, err = p.communicate()
+        return output
 
     def set_value(self, key, val):
         cmd = ['odbedit', '-e', self.expname, '-c']
