@@ -97,9 +97,20 @@ class ODB:
     def get_value(self, key):
         cmd = ['odbedit', '-e', self.expname, '-c']
         cmd.append('ls -v "' + key + '"')
+
+        out_last = None
+        err_last = None
+
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        output, err = p.communicate()
-        return output
+        out, err = p.communicate()
+
+        while (out != out_last or err != err_last):
+            out_last = out
+            err_last = err
+            p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            out, err = p.communicate()
+            
+        return out
 
     def set_value(self, key, val):
         cmd = ['odbedit', '-e', self.expname, '-c']
