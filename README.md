@@ -1,7 +1,7 @@
-# mhelper
+# pymidas
 
 ## About
-A tool that helps set up and work with MIDAS experiments, and a python library that aims to provide a nice API for using python and MIDAS together. 
+A python library that aims to provide a subset of the MIDAS API for use in python.  And, a tool that helps set up and work with MIDAS experiments.
 
 ## Getting Started
 Install the utility and midas python library with a few deft strokes of the keyboard
